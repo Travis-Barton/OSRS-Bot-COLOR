@@ -20,6 +20,7 @@ class OSRSCombat(RuneLiteBot):
     def create_options(self):
         self.options_builder.add_slider_option("kills", "How many kills?", 1, 300)
         self.options_builder.add_checkbox_option("prefs", "Additional options", ["Loot", "Bank"])
+        self.options_builder.add_checkbox_option("special_cases", "Special Cases", ["Rock Crab Training"])
 
     def save_options(self, options: dict):
         for option in options:
@@ -42,8 +43,7 @@ class OSRSCombat(RuneLiteBot):
         self.log_msg("Options set successfully.")
 
     def main_loop(self):
-        self.setup_osnr()
-
+        self.setup_client()
         self.set_compass_north()
 
         # Make sure auto retaliate is on
@@ -66,21 +66,35 @@ class OSRSCombat(RuneLiteBot):
             while not self.is_in_combat():
                 if not self.status_check_passed():
                     return
+                hp = self.get_hp()
+                if hp < 10:
+                    self.run_down()
+                    food_points = self.get_all_tagged_in_rect(self.rect_inventory)
+                    if food_points is None:
+                        self.logout()
+                    else:
+                        self.mouse.move_to(food_points[0], .2, time_variance=.001)
+                        self.mouse.click()
+                    time.sleep(5)
                 if timeout <= 0:
-                    self.log_msg("Timed out looking for NPC.")
-                    self.set_status(BotStatus.STOPPED)
-                    return
+                    if self.special_cases == 'Rock Crab Training':
+                        self.log_msg("Timed out looking for NPC. Trying to leave and re-enter.")
+                        self.run_down()
+                    else:
+                        self.log_msg("Timed out looking for NPC.")
+                        self.set_status(BotStatus.STOPPED)
+                        return
                 npc = self.get_nearest_tagged_NPC(self.rect_game_view)
                 if npc is not None:
                     self.log_msg("Attempting to attack NPC...")
-                    self.mouse.move_to(npc, duration=0)
+                    self.mouse.move_to(npc, duration=.2, destination_variance=2, time_variance=.001, tween='rand')
                     self.mouse.click()
                     time.sleep(3)
                     timeout -= 3
                 else:
                     self.log_msg("No NPC found.")
                     time.sleep(2)
-                    timeout -= 2
+                    timeout -= 6
 
             if not self.status_check_passed():
                 return
@@ -152,11 +166,11 @@ class OSRSCombat(RuneLiteBot):
 
     def run_down(self):
         for i in range(3):
-            self.mouse.move_to((650, 176), 0.2, destination_variance=3)
+            self.mouse.move_to((650, 176), 0.2, destination_variance=3, time_variance=.001)
             self.mouse.click()
             time.sleep(5)
         for i in range(3):
-            self.mouse.move_to((650, 42), 0.2, destination_variance=3)
+            self.mouse.move_to((650, 42), 0.2, destination_variance=3, time_variance=.001)
             self.mouse.click()
             time.sleep(5)
         pass
