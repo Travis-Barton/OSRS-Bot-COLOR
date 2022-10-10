@@ -37,6 +37,9 @@ class OSRSCombat(RuneLiteBot):
                     self.should_bank = True
                     # self.log_msg("Banking enabled.")
                     self.log_msg("Note: Banking is not yet implemented.")
+                if 'Rock Crab Training' in options[option]:
+                    self.special_cases = 'Rock Crab Training'
+                    self.log_msg("Rock Crab Training enabled.")
             else:
                 self.log_msg(f"Unknown option: {option}")
         self.options_set = True
