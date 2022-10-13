@@ -5,6 +5,7 @@ from model.bot import BotStatus
 from model.runelite_bot import RuneLiteBot
 import time
 import pyautogui as pag
+import utilities.bot_cv as bcv
 
 
 class OSRSCombat(RuneLiteBot):
@@ -17,9 +18,11 @@ class OSRSCombat(RuneLiteBot):
         self.kills = 0
         self.should_loot = False
         self.should_bank = False
+        self.special_cases = False
+
 
     def create_options(self):
-        self.options_builder.add_slider_option("kills", "How many kills?", 1, 300)
+        self.options_builder.add_slider_option("kills", "How many kills?", 1, 500)
         self.options_builder.add_checkbox_option("prefs", "Additional options", ["Loot", "Bank"])
         self.options_builder.add_checkbox_option("special_cases", "Special Cases", ["Rock Crab Training"])
 
@@ -37,8 +40,9 @@ class OSRSCombat(RuneLiteBot):
                     self.should_bank = True
                     # self.log_msg("Banking enabled.")
                     self.log_msg("Note: Banking is not yet implemented.")
+            elif option == "special_cases":
                 if 'Rock Crab Training' in options[option]:
-                    self.special_cases = 'Rock Crab Training'
+                    self.special_cases = True
                     self.log_msg("Rock Crab Training enabled.")
             else:
                 self.log_msg(f"Unknown option: {option}")
@@ -47,8 +51,7 @@ class OSRSCombat(RuneLiteBot):
         self.log_msg("Options set successfully.")
 
     def main_loop(self):
-        self.setup_client()
-        self.set_compass_north()
+        self.setup_client(window_title="RuneLite", set_layout_fixed=True, collapse_runelite_settings=False, logout_runelite=True)
 
         # Make sure auto retaliate is on
         self.toggle_auto_retaliate(toggle_on=True)
@@ -66,24 +69,26 @@ class OSRSCombat(RuneLiteBot):
                 return
 
             # Attack NPC
-            timeout = 60  # check for up to 60 seconds
-            while not self.is_in_combat():
-                if not self.status_check_passed():
-                    return
+            if self.special_cases:
                 hp = self.get_hp()
-                if hp < 10:
+                if (hp is not None) and (hp < 12):
                     self.run_down()
-                    food_points = self.get_all_tagged_in_rect(self.rect_inventory)
+                    food_points = self.get_all_tagged_in_rect(self.rect_inventory, self.TAG_BLUE)
                     if food_points is None:
                         self.logout()
                     else:
                         self.mouse.move_to(food_points[0], .2, time_variance=.001)
                         self.mouse.click()
                     time.sleep(5)
+            timeout = 60  # check for up to 60 seconds
+            while not self.is_in_combat():
+                if not self.status_check_passed():
+                    return
                 if timeout <= 0:
-                    if self.special_cases == 'Rock Crab Training':
+                    if self.special_cases:
                         self.log_msg("Timed out looking for NPC. Trying to leave and re-enter.")
                         self.run_down()
+                        time.sleep(5)
                     else:
                         self.log_msg("Timed out looking for NPC.")
                         self.set_status(BotStatus.STOPPED)
@@ -98,7 +103,7 @@ class OSRSCombat(RuneLiteBot):
                 else:
                     self.log_msg("No NPC found.")
                     time.sleep(2)
-                    timeout -= 6
+                    timeout -= 12
 
             if not self.status_check_passed():
                 return
@@ -172,7 +177,7 @@ class OSRSCombat(RuneLiteBot):
                 else:
                     # self.log_msg("No NPC found.")
                     time.sleep(2)
-                    timeout -= 6
+                    timeout -= 15
 
             # if not self.status_check_passed():
             #     return
@@ -183,6 +188,7 @@ class OSRSCombat(RuneLiteBot):
                 if timeout <= 0:
                     # self.log_msg("Timed out fighting NPC.")
                     # self.set_status(BotStatus.STOPPED)
+                    print('timeout done')
                     return
                 time.sleep(2)
                 timeout -= 2
@@ -206,4 +212,4 @@ class OSRSCombat(RuneLiteBot):
 
 if __name__ == "__main__":
     bot = OSRSCombat()
-    bot.test_loop(700)
+    bot.test_loop(260)
