@@ -163,3 +163,4 @@ src/images/temp/*
 # utilities/record_mouse
 src/utilities/record_mouse/*
 !src/utilities/record_mouse/record_mouse.py
+/src/firebase/runebot_key.json
