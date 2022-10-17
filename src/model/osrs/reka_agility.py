@@ -6,11 +6,12 @@ import numpy as np
 import random as rd
 import pandas as pd
 from model.bot import BotStatus
+from firebase_tools.fb_logger import update_status, new_action_available, get_action, wipe_new_action
 import cv2
 
 
 class RekAgilityBot(RuneLiteBot):
-    def __init__(self, mouse_csv='src/files/agility/click_log.csv'):
+    def __init__(self, mouse_csv='src/files/agility/click_log.csv', username='test'):
         title = "Seers Agility Bot"
         description = ("This bot will complete the Seers' Village Agility Course. Put your character on the first"
                        " roof to begin. Marks will only be collected every 8 laps to save on time.")
@@ -23,6 +24,7 @@ class RekAgilityBot(RuneLiteBot):
         self.author_email = "travisdatabarton@gmail.com"
         self.mouse_info = pd.read_csv(mouse_csv, index_col=0)
         self.mouse_info.time = self.mouse_info.time.iloc[1:].tolist() + [3]
+        self.username = username
 
     def create_options(self):
         '''
@@ -82,7 +84,8 @@ class RekAgilityBot(RuneLiteBot):
         return
 
     def check_for_mark(self, region=None, confidence=.6):
-        LOC = pag.locateOnScreen(f'src/files/agility/fast_rek_run/screenshots/grace_mark.png', confidence=confidence, region=region)
+        LOC = pag.locateOnScreen(f'src/files/agility/fast_rek_run/screenshots/grace_mark.png', confidence=confidence,
+                                 region=region)
         if LOC is not None:
             # self.log_msg(f'Grace mark found')
             mid = pag.center(LOC)
@@ -162,22 +165,6 @@ class RekAgilityBot(RuneLiteBot):
             time.sleep(self.mouse_info.iloc[i, 3] + np.abs(rd.gauss(0, .1)))
         time.sleep(5)
 
-    def click_on_color(self, color):
-        map = self.rect_game_view
-        map = (map.start.x, map.start.y, map.end.x-map.start.x, map.end.y-map.start.y)
-        pag.screenshot(imageFilename='src/images/temp/temp_screenshot.png', region=map)
-        path_tagged = isolate_colors('src/images/temp/temp_screenshot.png', [color], "get_all_tagged_in_rect")
-        contours = get_contours(path_tagged)
-        # coords = get_contour_positions(contours)
-        coords = rd.choice(contours[0])[0]
-        print(contours[0])
-        self.mouse.move_to((coords[0], coords[1]), .2, 0, .001)
-        self.mouse.click()
-        # cv2.imshow('mask', mask)
-        # cv2.imshow('result', result)
-        # cv2.waitKey()
-        return (coords[0], coords[1])
-
     def vision_run(self):
         for i in range(8):
             self.check_for_mark()
@@ -222,7 +209,7 @@ class RekAgilityBot(RuneLiteBot):
             region = (183, 0, 356 - 183, pag.size()[1])
             try:
                 loc = pag.locateCenterOnScreen(f'src/files/agility/fast_rek_run/screenshots/mouse_shot_{i}.png',
-                                           confidence=conf, region=region if i == 3 else None)
+                                               confidence=conf, region=region if i == 3 else None)
                 self.mouse.move_to((loc.x, loc.y), .2, 1 if i < 7 else 0, .005, 'rand')
                 self.mouse.click()
                 time.sleep(self.mouse_info.iloc[i, 3] + 1.1 + np.abs(rd.gauss(0, .5)))
@@ -234,15 +221,48 @@ class RekAgilityBot(RuneLiteBot):
                 time.sleep(self.mouse_info.iloc[i, 3] + 1 + np.abs(rd.gauss(0, .5)))
         time.sleep(5)
 
+    def click_on_color(self, color):
+        map = self.rect_game_view
+        map = (map.start.x, map.start.y, map.end.x - map.start.x, map.end.y - map.start.y)
+        pag.screenshot(imageFilename='src/images/temp/temp_screenshot.png', region=map)
+        path_tagged = isolate_colors('src/images/temp/temp_screenshot.png', [color], "get_all_tagged_in_rect")
+        contours = get_contours(path_tagged)
+        # coords = get_contour_positions(contours)
+        coords = rd.choice(contours[0])[0]
+        print(contours[0])
+        self.mouse.move_to((coords[0], coords[1]), .2, 0, .001)
+        self.mouse.click()
+        # cv2.imshow('mask', mask)
+        # cv2.imshow('result', result)
+        # cv2.waitKey()
+        return (coords[0], coords[1])
+
+    def test_loop(self):
+        i = 0
+        while not new_action_available(self.username):
+            start = time.time()
+            if i % 9 == 0:
+                ab.vision_run()
+            else:
+                ab.fast_rout()
+            print(f'run {i} took {time.time() - start} seconds')
+            update_status(self.username, 'agility', 'fast rek run laps', i)
+            i += 1
+        update_status(self.username, 'agility', 'rek training', -1, False)
+        wipe_new_action(self.username)
 
 
 if __name__ == '__main__':
-    ab = RekAgilityBot(mouse_csv='C:\\Users\\sivar\\PycharmProjects\\OSRS-Bot-COLOR\\src\\files\\agility\\fast_rek_run\\fast_run.csv')
-    for i in range(223):
-        start = time.time()
-        if i % 9 == 0:
-            ab.vision_run()
-        else:
-            ab.fast_rout()
-        print(f'run {i} took {time.time() - start} seconds')
-    ab.vision_run()
+    ab = RekAgilityBot(
+        mouse_csv='C:\\Users\\sivar\\PycharmProjects\\OSRS-Bot-COLOR\\src\\files\\agility\\fast_rek_run\\fast_run.csv',
+        username='travmanman')
+    # for i in range(223):
+    #     start = time.time()
+    #     if i % 9 == 0:
+    #         ab.vision_run()
+    #     else:
+    #         ab.fast_rout()
+    #     print(f'run {i} took {time.time() - start} seconds')
+    #
+    # ab.vision_run()
+    ab.test_loop()
