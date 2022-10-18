@@ -6,8 +6,10 @@ import numpy as np
 import random as rd
 import pandas as pd
 from model.bot import BotStatus
-from firebase_tools.fb_logger import update_status, new_action_available, get_action, wipe_new_action
+from firebase_tools.fb_logger import update_status, new_action_available, get_action, \
+    wipe_new_action, upload_to_firebase
 import cv2
+import datetime
 
 
 class RekAgilityBot(RuneLiteBot):
@@ -57,31 +59,7 @@ class RekAgilityBot(RuneLiteBot):
             print("Developer: ensure option keys are correct, and that the option values are being accessed correctly.")
 
     def main_loop(self, runs=250, color=None):
-        # setup the bot
-        if color is None:
-            color = self.TAG_PURPLE
-        self.setup_client('RuneLite', True, True, True)
-        self.set_camera_zoom(43)
-        self.set_status(BotStatus.RUNNING)
-        self.vision_run(color)
-        # start the bot
-        while self.running_time > 0:
-            self.log_msg(f'starting run {self.running_time}')
-            if not self.status_check_passed():
-                return
-            if self.running_time % 8 == 0:
-                self.vision_run(color)
-            else:
-                self.fast_rout()
-            if not self.check_for_fall():
-                self.running_time -= 1
-                continue
-            else:
-                self.log_msg('something went wrong on reset, logging out')
-                self.logout()
-                self.set_status(BotStatus.STOPPED)
-
-        return
+        pass
 
     def check_for_mark(self, region=None, confidence=.6):
         LOC = pag.locateOnScreen(f'src/files/agility/fast_rek_run/screenshots/grace_mark.png', confidence=confidence,
@@ -238,19 +216,42 @@ class RekAgilityBot(RuneLiteBot):
         return (coords[0], coords[1])
 
     def test_loop(self):
-        i = 0
-        while not new_action_available(self.username):
-            start = time.time()
-            if i % 9 == 0:
-                ab.vision_run()
-            else:
-                ab.fast_rout()
-            print(f'run {i} took {time.time() - start} seconds')
-            update_status(self.username, 'agility', 'fast rek run laps', i)
-            i += 1
-        new_action = get_action(self.username)
-        if new_action == 'logout':
-            update_status(self.username, 'agility', 'rek training', -1, False)
+        s = time.time()
+        try:
+            i = 0
+            login_time = datetime.datetime.now()
+            update_status(self.username, 'agility', 'fast rek run laps', i,
+                          last_login=login_time)
+            while not new_action_available(self.username):
+                start = time.time()
+                if i % 9 == 0:
+                    ab.vision_run()
+                else:
+                    ab.fast_rout()
+                print(f'run {i} took {time.time() - start} seconds')
+                update_status(self.username, 'agility', 'fast rek run laps', i, last_login=login_time)
+                i += 1
+            new_action = get_action(self.username)
+            if new_action == 'logout':
+                update_status(self.username, 'agility', 'rek training', -1, False)
+                self.logout()
+                wipe_new_action(self.username)
+                return
+            elif new_action == 'update':
+                screen = pag.screenshot(self.username + '-temp.png', region=(self.rect_inventory.start.x, self.rect_inventory.start.y,
+                                        self.rect_inventory.end.x - self.rect_inventory.start.x,
+                                        self.rect_inventory.end.y - self.rect_inventory.start.y))
+                screen = cv2.cvtColor(np.array(screen), cv2.COLOR_RGB2BGR)
+                upload_to_firebase(self.username + '-temp.png')
+                wipe_new_action(self.username)
+
+        except Exception as e:
+            update_status(self.username,
+                          'agility failed',
+                          f'error cost {e}\nafter {time.time()-s} seconds at: {datetime.datetime.now()}',
+                          -1,
+                          False)
+            wipe_new_action(self.username)
             self.logout()
             return
 
@@ -259,13 +260,4 @@ if __name__ == '__main__':
     ab = RekAgilityBot(
         mouse_csv='C:\\Users\\sivar\\PycharmProjects\\OSRS-Bot-COLOR\\src\\files\\agility\\fast_rek_run\\fast_run.csv',
         username='travmanman')
-    # for i in range(223):
-    #     start = time.time()
-    #     if i % 9 == 0:
-    #         ab.vision_run()
-    #     else:
-    #         ab.fast_rout()
-    #     print(f'run {i} took {time.time() - start} seconds')
-    #
-    # ab.vision_run()
     ab.test_loop()
