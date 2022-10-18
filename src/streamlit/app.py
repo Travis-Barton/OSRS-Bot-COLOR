@@ -42,6 +42,11 @@ if len(active) > 0:
             db.collection(u'accounts').document(player['username']).update({
                 u'new_action': 'logout',
                 u'last_updated': datetime.datetime.now()})
+        but2 = active_cols[i].button('Get inventory')
+        if but2:
+            db.collection(u'accounts').document(player['username']).update({
+                u'new_action': 'update',
+                u'last_updated': datetime.datetime.now()})
 st.markdown('---')
 st.markdown('## <u>Inactive Players</u>', unsafe_allow_html=True)
 if len(inactive) > 0:
