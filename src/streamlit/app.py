@@ -7,7 +7,7 @@ config = toml.load('.streamlit/secrets.toml')
 cred = credentials.Certificate(config)
 try:
     fba.initialize_app(cred, {
-    'storageBucket': 'dene-2ac17.appspot.com'
+    'storageBucket': 'gs://dene-2ac17.appspot.com'
 })
 except ValueError:
     pass
@@ -57,8 +57,8 @@ if len(active) > 0:
             db.collection(u'accounts').document(player['username']).update({
                 u'new_action': 'update',
                 u'last_updated': datetime.datetime.now()})
-        get_update_images(player['username'])
-        st.image(f'temp.png', width=200)
+        # get_update_images(player['username'])
+        # st.image(f'temp.png', width=200)
 st.markdown('---')
 st.markdown('## <u>Inactive Players</u>', unsafe_allow_html=True)
 if len(inactive) > 0:
