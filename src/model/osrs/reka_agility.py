@@ -224,7 +224,7 @@ class RekAgilityBot(RuneLiteBot):
                           last_login=login_time)
             while not new_action_available(self.username) and i < laps:
                 start = time.time()
-                if i % 9 == 0:
+                if i % 8 == 0:
                     ab.vision_run()
                 else:
                     ab.fast_rout()
@@ -254,10 +254,15 @@ class RekAgilityBot(RuneLiteBot):
                           False)
             wipe_new_action(self.username)
             return
+        update_status(self.username,
+                      'agility successful',
+                      f'complete after {time.time() - s:2f} seconds at {datetime.datetime.now().strftime("%H:%M:%S")}',
+                      -1,
+                      False)
 
 
 if __name__ == '__main__':
     ab = RekAgilityBot(
         mouse_csv='C:\\Users\\sivar\\PycharmProjects\\OSRS-Bot-COLOR\\src\\files\\agility\\fast_rek_run\\fast_run.csv',
         username='travmanman')
-    ab.test_loop()
+    ab.test_loop(15)
