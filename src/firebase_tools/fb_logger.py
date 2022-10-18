@@ -61,8 +61,9 @@ def wipe_new_action(acc):
 def upload_to_firebase(filepath):
     bucket = storage.bucket('runebot-d7855.appspot.com')
     blob = bucket.blob('runepics/' + filepath)
-    with open(filepath, 'rb') as my_file:
-        blob.upload_from_file(my_file)
+    # with open(filepath, 'rb') as my_file:
+    #     blob.upload_from_file(my_file)
+    blob.upload_from_filename(filepath)
 
 
 if __name__ == '__main__':
