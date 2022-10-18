@@ -1,13 +1,14 @@
 import streamlit as st
 import firebase_admin as fba
-from firebase_admin import credentials
-from firebase_admin import firestore
+from firebase_admin import credentials, storage, firestore
 import datetime
 import toml
 config = toml.load('.streamlit/secrets.toml')
 cred = credentials.Certificate(config)
 try:
-    fba.initialize_app(cred)
+    fba.initialize_app(cred, {
+    'storageBucket': 'gs://dene-2ac17.appspot.com'
+})
 except ValueError:
     pass
 db = fba.firestore.client()
@@ -25,6 +26,14 @@ def get_player_statuses():
             else:
                 inactive.append(player)
     return active, inactive
+
+
+def get_update_images(username):
+    # get main bot data
+    bucket = storage.bucket()
+    blob = bucket.blob(f'runepics/{username}-temp.png')
+    blob.download_to_filename('temp.png')
+
 
 st.title("RuneScape Scheduler")
 st.markdown('---')
@@ -47,6 +56,8 @@ if len(active) > 0:
             db.collection(u'accounts').document(player['username']).update({
                 u'new_action': 'update',
                 u'last_updated': datetime.datetime.now()})
+        get_update_images(player['username'])
+        st.image(f'temp.png', width=200)
 st.markdown('---')
 st.markdown('## <u>Inactive Players</u>', unsafe_allow_html=True)
 if len(inactive) > 0:
