@@ -222,7 +222,7 @@ class RekAgilityBot(RuneLiteBot):
             login_time = datetime.datetime.now()
             update_status(self.username, 'agility', 'fast rek run laps', i,
                           last_login=login_time)
-            while not new_action_available(self.username) and i < laps:
+            while i < laps:
                 start = time.time()
                 if i % 8 == 0:
                     ab.vision_run()
@@ -230,21 +230,22 @@ class RekAgilityBot(RuneLiteBot):
                     ab.fast_rout()
                 print(f'run {i} took {time.time() - start} seconds')
                 update_status(self.username, 'agility', 'fast rek run laps', i, last_login=login_time)
+                if new_action_available(self.username):
+                    new_action = get_action(self.username)
+                    if new_action == 'logout':
+                        update_status(self.username, 'agility', 'rek training', -1, False)
+                        # self.logout()
+                        wipe_new_action(self.username)
+                        return
+                    elif new_action == 'update':
+                        screen = pag.screenshot(self.username + '-temp.png',
+                                                region=(self.rect_inventory.start.x, self.rect_inventory.start.y,
+                                                        self.rect_inventory.end.x - self.rect_inventory.start.x,
+                                                        self.rect_inventory.end.y - self.rect_inventory.start.y))
+                        screen = cv2.cvtColor(np.array(screen), cv2.COLOR_RGB2BGR)
+                        upload_to_firebase(self.username + '-temp.png')
+                        wipe_new_action(self.username)
                 i += 1
-            new_action = get_action(self.username)
-            if new_action == 'logout':
-                update_status(self.username, 'agility', 'rek training', -1, False)
-                self.logout()
-                wipe_new_action(self.username)
-                return
-            elif new_action == 'update':
-                screen = pag.screenshot(self.username + '-temp.png', region=(self.rect_inventory.start.x, self.rect_inventory.start.y,
-                                        self.rect_inventory.end.x - self.rect_inventory.start.x,
-                                        self.rect_inventory.end.y - self.rect_inventory.start.y))
-                screen = cv2.cvtColor(np.array(screen), cv2.COLOR_RGB2BGR)
-                upload_to_firebase(self.username + '-temp.png')
-                wipe_new_action(self.username)
-                self.test_loop()
 
         except Exception as e:
             update_status(self.username,
