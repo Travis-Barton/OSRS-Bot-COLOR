@@ -3,7 +3,9 @@ import firebase_admin as fba
 from firebase_admin import credentials
 from firebase_admin import firestore
 import datetime
-cred = credentials.Certificate("src/firebase_tools/runebot_key.json")
+import toml
+config = toml.load('src/streamlit/.streamlit/secrets.toml')
+cred = credentials.Certificate(config)
 try:
     fba.initialize_app(cred)
 except ValueError:
