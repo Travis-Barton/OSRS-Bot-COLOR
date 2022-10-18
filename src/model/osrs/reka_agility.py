@@ -215,14 +215,14 @@ class RekAgilityBot(RuneLiteBot):
         # cv2.waitKey()
         return (coords[0], coords[1])
 
-    def test_loop(self):
+    def test_loop(self, laps=500):
         s = time.time()
         try:
             i = 0
             login_time = datetime.datetime.now()
             update_status(self.username, 'agility', 'fast rek run laps', i,
                           last_login=login_time)
-            while not new_action_available(self.username):
+            while not new_action_available(self.username) and i < laps:
                 start = time.time()
                 if i % 9 == 0:
                     ab.vision_run()
@@ -253,7 +253,6 @@ class RekAgilityBot(RuneLiteBot):
                           -1,
                           False)
             wipe_new_action(self.username)
-            self.logout()
             return
 
 
