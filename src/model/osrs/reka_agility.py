@@ -244,6 +244,7 @@ class RekAgilityBot(RuneLiteBot):
                 screen = cv2.cvtColor(np.array(screen), cv2.COLOR_RGB2BGR)
                 upload_to_firebase(self.username + '-temp.png')
                 wipe_new_action(self.username)
+                self.test_loop()
 
         except Exception as e:
             update_status(self.username,
