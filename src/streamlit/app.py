@@ -2,8 +2,10 @@ import streamlit as st
 import firebase_admin as fba
 from firebase_admin import credentials
 from firebase_admin import firestore
-
-cred = credentials.Certificate("src/firebase_tools/runebot_key.json")
+import datetime
+import toml
+config = toml.load('.streamlit/secrets.toml')
+cred = credentials.Certificate(config)
 try:
     fba.initialize_app(cred)
 except ValueError:
@@ -33,8 +35,13 @@ if len(active) > 0:
     for i, player in enumerate(active):
         active_cols[i].subheader(player['username'].title())
         active_cols[i].markdown(f"**Status:** {player['status']}")
-        active_cols[i].markdown(f"**Last Updated:** {player['last_updated']}")
-        active_cols[i].markdown(f"**Sub Action:** {player['sub_action']}")
+        active_cols[i].markdown(f"**{player['action_update_type']}**: {player['action_value']}")
+        active_cols[i].markdown(f"**Last Updated:** {player['last_updated'].strftime('%Y-%m-%d %H:%M:%S')}")
+        but = active_cols[i].button('Logout')
+        if but:
+            db.collection(u'accounts').document(player['username']).update({
+                u'new_action': 'logout',
+                u'last_updated': datetime.datetime.now()})
 st.markdown('---')
 st.markdown('## <u>Inactive Players</u>', unsafe_allow_html=True)
 if len(inactive) > 0:
@@ -42,6 +49,6 @@ if len(inactive) > 0:
     for i, player in enumerate(inactive):
         inactive_cols[i].subheader(player['username'].title())
         inactive_cols[i].markdown(f"**Status:** {player['status']}")
+        inactive_cols[i].markdown(f"**{player['action_update_type']}**: {player['action_value']}")
         inactive_cols[i].markdown(f"**Last Updated:** {player['last_updated']}")
-        inactive_cols[i].markdown(f"**Sub Action:** {player['sub_action']}")
 st.markdown('---')

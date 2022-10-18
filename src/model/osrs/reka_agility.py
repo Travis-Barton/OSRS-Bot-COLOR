@@ -248,8 +248,11 @@ class RekAgilityBot(RuneLiteBot):
             print(f'run {i} took {time.time() - start} seconds')
             update_status(self.username, 'agility', 'fast rek run laps', i)
             i += 1
-        update_status(self.username, 'agility', 'rek training', -1, False)
-        wipe_new_action(self.username)
+        new_action = get_action(self.username)
+        if new_action == 'logout':
+            update_status(self.username, 'agility', 'rek training', -1, False)
+            self.logout()
+            return
 
 
 if __name__ == '__main__':
