@@ -21,15 +21,17 @@ db = firestore.client()
 def update_status(acc, status, action_update_type, action_value, last_login=None,
                   logged_in=True):
     try:
-        if last_login is None:
+        if last_login is not None:
             last_login = datetime.datetime.now()
+            db.collection(u'accounts').document(acc).update({
+                u'last_login': last_login,
+            })
         db.collection(u'accounts').document(acc).update({
                                                             u'status': status,
                                                             u'last_updated': datetime.datetime.now(),
                                                             u'logged_in': logged_in,
                                                             u'action_update_type': action_update_type,
-                                                            u'action_value': action_value,
-                                                            u'last_login': last_login
+                                                            u'action_value': action_value
         })
         return True
     except Exception as e:

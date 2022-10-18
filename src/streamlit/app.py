@@ -46,7 +46,7 @@ if len(active) > 0:
         active_cols[i].subheader(player['username'].title())
         active_cols[i].markdown(f"**Status:** {player['status']}")
         active_cols[i].markdown(f"**{player['action_update_type']}**: {player['action_value']}")
-        active_cols[i].markdown(f"**Time Logged In:** {datetime.datetime.now() - player['last_login']}")
+        active_cols[i].markdown(f"**Time Logged In:** {player['last_login']}")
         active_cols[i].markdown(f"**Last Updated:** {player['last_updated'].strftime('%Y-%m-%d %H:%M:%S')}")
         but = active_cols[i].button('Logout')
         if but:

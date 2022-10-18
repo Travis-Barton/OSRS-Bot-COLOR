@@ -6,10 +6,14 @@ from model.runelite_bot import RuneLiteBot
 import time
 import pyautogui as pag
 import utilities.bot_cv as bcv
+from firebase_tools.fb_logger import upload_to_firebase, update_status, new_action_available, get_action, wipe_new_action
+import cv2
+import numpy as np
+import datetime
 
 
 class OSRSCombat(RuneLiteBot):
-    def __init__(self):
+    def __init__(self, username):
         title = "Combat Bot"
         description = ("This bot attacks NPCs tagged using RuneLite. Position your character in the viscinity of the tagged NPCs. " +
                        "Ensure there are no RuneLite overlays currently visible in the top-left of the game-view, as this bot relies " +
@@ -19,6 +23,7 @@ class OSRSCombat(RuneLiteBot):
         self.should_loot = False
         self.should_bank = False
         self.special_cases = False
+        self.username = username
 
 
     def create_options(self):
@@ -151,52 +156,92 @@ class OSRSCombat(RuneLiteBot):
             print("Auto retaliate is already off.")
 
     def test_loop(self, rounds=100):
+        s = time.time()
         self.killed = 0
-        while self.killed < rounds:
-            # if not self.status_check_passed():
-            #     return
+        update_status(self.username, 'combat training', 'starting', self.killed, datetime.datetime.now(), True)
+        try:
 
-            # Attack NPC
-            timeout = 60  # check for up to 60 seconds
-            while not self.is_in_combat():
+            while self.killed < rounds:
                 # if not self.status_check_passed():
                 #     return
-                if timeout <= 0:
-                    # self.log_msg("Timed out looking for NPC.")
-                    # self.set_status(BotStatus.STOPPED)
-                    print('no NPC')
-                    self.run_down()
-                    timeout = 60
-                npc = self.get_nearest_tagged_NPC(self.rect_game_view)
-                if npc is not None:
-                    # self.log_msg("Attempting to attack NPC...")
-                    self.mouse.move_to(npc, duration=.2, destination_variance=2, time_variance=.001, tween='rand')
-                    self.mouse.click()
-                    time.sleep(3)
-                    timeout -= 3
-                else:
-                    # self.log_msg("No NPC found.")
+
+                # Attack NPC
+                timeout = 60  # check for up to 60 seconds
+                while not self.is_in_combat():
+                    # if not self.status_check_passed():
+                    #     return
+                    if timeout <= 0:
+                        # self.log_msg("Timed out looking for NPC.")
+                        # self.set_status(BotStatus.STOPPED)
+                        print('no NPC')
+                        self.run_down()
+                        timeout = 60
+                    npc = self.get_nearest_tagged_NPC(self.rect_game_view)
+                    if npc is not None:
+                        # self.log_msg("Attempting to attack NPC...")
+                        self.mouse.move_to(npc, duration=.2, destination_variance=2, time_variance=.001, tween='rand')
+                        self.mouse.click()
+                        time.sleep(3)
+                        timeout -= 3
+                    else:
+                        # self.log_msg("No NPC found.")
+                        time.sleep(2)
+                        timeout -= 15
+                    if new_action_available(self.username):
+                        new_action = get_action(self.username)
+                        if new_action == 'logout':
+                            update_status(self.username, 'agility', 'rek training', -1, None)
+                            # self.logout()
+                            wipe_new_action(self.username)
+                            return
+                        elif new_action == 'update':
+                            screen = pag.screenshot(self.username + '-temp.png',
+                                                    region=(self.rect_inventory.start.x, self.rect_inventory.start.y,
+                                                            self.rect_inventory.end.x - self.rect_inventory.start.x,
+                                                            self.rect_inventory.end.y - self.rect_inventory.start.y))
+                            screen = cv2.cvtColor(np.array(screen), cv2.COLOR_RGB2BGR)
+                            upload_to_firebase(self.username + '-temp.png')
+                            wipe_new_action(self.username)
+
+                # if not self.status_check_passed():
+                #     return
+
+                # If combat is over, assume we killed the NPC.
+                timeout = 90  # give our character 90 seconds to kill the NPC
+                while self.is_in_combat():
+                    if timeout <= 0:
+                        # self.log_msg("Timed out fighting NPC.")
+                        # self.set_status(BotStatus.STOPPED)
+                        print('timeout done')
+                        return
                     time.sleep(2)
-                    timeout -= 15
-
-            # if not self.status_check_passed():
-            #     return
-
-            # If combat is over, assume we killed the NPC.
-            timeout = 90  # give our character 90 seconds to kill the NPC
-            while self.is_in_combat():
-                if timeout <= 0:
-                    # self.log_msg("Timed out fighting NPC.")
-                    # self.set_status(BotStatus.STOPPED)
-                    print('timeout done')
-                    return
-                time.sleep(2)
-                timeout -= 2
-                # if not self.status_check_passed():
-                #     return
-            self.killed += 1
-            print(f"Enemy killed. {rounds - self.killed} to go!")
+                    timeout -= 2
+                    # if not self.status_check_passed():
+                    #     return
+                self.killed += 1
+                update_status(self.username,
+                              'combat',
+                              f'killed {self.killed} of {rounds} in {round(time.time() - s, 2)} seconds',
+                              '',
+                              None,
+                              logged_in=True)
+                print(f"Enemy killed. {rounds - self.killed} to go!")
+        except Exception as e:
+            update_status(self.username,
+                          'combat failed',
+                          f'error cost {e}\nafter {time.time()-s} seconds at: {datetime.datetime.now()}',
+                          -1,
+                          None,
+                          logged_in=False)
+            wipe_new_action(self.username)
         print(f'killed {self.killed} NPCs')
+        update_status(self.username,
+                      'combat successful',
+                      f'complete after {time.time() - s:2f} seconds at {datetime.datetime.now().strftime("%H:%M:%S")}',
+                      -1,
+                      None,
+                      logged_in=False)
+
 
     def run_down(self):
         for i in range(3):
@@ -211,5 +256,5 @@ class OSRSCombat(RuneLiteBot):
 
 
 if __name__ == "__main__":
-    bot = OSRSCombat()
+    bot = OSRSCombat('travmanman')
     bot.test_loop(260)
