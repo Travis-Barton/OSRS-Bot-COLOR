@@ -164,3 +164,4 @@ src/images/temp/*
 src/utilities/record_mouse/*
 !src/utilities/record_mouse/record_mouse.py
 /src/firebase_tools/runebot_key.json
+src/streamlit/.streamlit/secrets.toml
