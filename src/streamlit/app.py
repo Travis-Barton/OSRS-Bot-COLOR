@@ -7,7 +7,7 @@ config = toml.load('.streamlit/secrets.toml')
 cred = credentials.Certificate(config)
 try:
     fba.initialize_app(cred, {
-    'storageBucket': 'gs://dene-2ac17.appspot.com'
+    'storageBucket': 'dene-2ac17.appspot.com'
 })
 except ValueError:
     pass
