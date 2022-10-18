@@ -1,7 +1,8 @@
 import firebase_admin as fba
-from firebase_admin import credentials
+from firebase_admin import credentials, storage
 from firebase_admin import firestore
 import datetime
+
 import time
 import os
 import sys
@@ -11,18 +12,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 cred = credentials.Certificate("src/firebase_tools/runebot_key.json")
-fba.initialize_app(cred)
+fba.initialize_app(cred, {
+    'storageBucket': 'gs://dene-2ac17.appspot.com'
+})
 db = firestore.client()
 
 
-def update_status(acc, status, action_update_type, action_value, logged_in=True):
+def update_status(acc, status, action_update_type, action_value, last_login=None,
+                  logged_in=True):
     try:
+        if last_login is None:
+            last_login = datetime.datetime.now()
         db.collection(u'accounts').document(acc).update({
                                                             u'status': status,
                                                             u'last_updated': datetime.datetime.now(),
                                                             u'logged_in': logged_in,
                                                             u'action_update_type': action_update_type,
-                                                            u'action_value': action_value
+                                                            u'action_value': action_value,
+                                                            u'last_login': last_login
         })
         return True
     except Exception as e:
@@ -50,6 +57,14 @@ def wipe_new_action(acc):
     db.collection(u'accounts').document(acc).update({
         'new_action': ''})
 
+
+def upload_to_firebase(filepath):
+    bucket = storage.bucket('runebot-d7855.appspot.com')
+    blob = bucket.blob('runepics/' + filepath)
+    with open(filepath, 'rb') as my_file:
+        blob.upload_from_file(my_file)
+
+
 if __name__ == '__main__':
     # get main bot data
     doc = db.collection(u'accounts').document(u'travmanman').get()
@@ -61,3 +76,4 @@ if __name__ == '__main__':
             print('no sub action')
         else:
             print(f'sub action: {trav["sub_action"]}')
+    upload_to_firebase('README.md')
