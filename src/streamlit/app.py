@@ -4,7 +4,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 import datetime
 import toml
-config = toml.load('src/streamlit/.streamlit/secrets.toml')
+config = toml.load('.streamlit/secrets.toml')
 cred = credentials.Certificate(config)
 try:
     fba.initialize_app(cred)
