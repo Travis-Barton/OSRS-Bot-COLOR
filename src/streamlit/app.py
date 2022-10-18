@@ -30,7 +30,8 @@ def get_player_statuses():
 
 def get_update_images(username):
     # get main bot data
-    bucket = storage.bucket('runepics')
+    bucket_name = "dene-2ac17.appspot.com"
+    bucket = storage.bucket(bucket_name)
     blob = bucket.blob(f'runepics/{username}-temp.png')
     blob.download_to_filename('temp.png')
 
