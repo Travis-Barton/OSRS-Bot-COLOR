@@ -224,7 +224,7 @@ class OSRSCombat(RuneLiteBot):
                 self.killed += 1
                 update_status(self.username,
                               'combat',
-                              f'killed {self.killed} of {rounds} in {round(time.time() - s, 2)} seconds',
+                              f'killed {self.killed} of {rounds} in {datetime.timedelta(seconds=round(time.time() - s, 2))} seconds',
                               '',
                               None,
                               logged_in=True)
