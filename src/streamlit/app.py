@@ -48,12 +48,12 @@ if len(active) > 0:
         active_cols[i].markdown(f"**{player['action_update_type']}**: {player['action_value']}")
         active_cols[i].markdown(f"**Time Logged In:** {player['last_login'].strftime('%Y-%m-%d %I:%M:%S')}")
         active_cols[i].markdown(f"**Last Updated:** {player['last_updated'].strftime('%Y-%m-%d %I:%M:%S')}")
-        but = active_cols[i].button('Logout')
+        but = active_cols[i].button('Logout', key=f'logout-{player["username"]}')
         if but:
-            db.collection(u'accounts').document(player['username']).update({
+            db.collection(u'accounts').document(player['username'] if player['username'] != 'dumbartonbri' else 'dumbartionbri').update({
                 u'new_action': 'logout',
                 u'last_updated': datetime.datetime.now()})
-        but2 = active_cols[i].button('Get inventory')
+        but2 = active_cols[i].button('Get inventory', key=f'getinv-{player["username"]}')
         if but2:
             db.collection(u'accounts').document(player['username']).update({
                 u'new_action': 'update',
