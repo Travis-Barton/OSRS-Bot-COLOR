@@ -8,11 +8,14 @@ import pandas as pd
 from model.bot import BotStatus
 import cv2
 import utilities.bot_cv as bcv
-
+import os
+from firebase_tools.fb_logger import upload_to_firebase, get_action, wipe_new_action, update_status, new_action_available
+import datetime
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 class Woodcutting(RuneLiteBot):
-    def __init__(self):
+    def __init__(self, username):
         title = "wooductting bot"
         description = ("This bot will cut wood with the option of fletching, burning or banking the logs.")
         super().__init__(title=title, description=description)
@@ -22,6 +25,7 @@ class Woodcutting(RuneLiteBot):
         self.version = "1.0.0"
         self.author = "Travis Barton"
         self.author_email = "travisdatabarton@gmail.com"
+        self.username = username
 
     def create_options(self):
         '''
@@ -159,86 +163,127 @@ class Woodcutting(RuneLiteBot):
         self.set_status(BotStatus.STOPPED)
 
     def test_loop(self, idle='fletching'):
-        last_inventory_pos = self.inventory_slots[6][3]
-        last_inventory_rgb = pag.pixel(last_inventory_pos.x, last_inventory_pos.y)
-        logs = 0
-        for l in range(1500):
-            tree = self.get_nearest_tag(self.TAG_PINK)
-            if tree is None:
-                time.sleep(1)
-                continue
-            else:
-                self.mouse.move_to(tree, .2, 2, .01, 'rand')
-                self.mouse.click()
-                time.sleep(3)
-                while bcv.search_text_in_rect(self.rect_game_view, ["Woodcutting", 'woodcuttirg', 'woodcuttirig'],
-                                              ["Not", 'No[', 'nol']):
-                    time.sleep(2)
+        try:
+            last_inventory_pos = self.inventory_slots[6][3]
+            last_inventory_rgb = pag.pixel(last_inventory_pos.x, last_inventory_pos.y)
+            logs = 0
+            s = time.time()
+            update_status(self.username, 'woodcutting', f'starting', logs, datetime.datetime.now(), True)
+
+            for l in range(1500):
+                tree = self.get_nearest_tag(self.TAG_PINK)
+                if tree is None:
+                    time.sleep(1)
                     continue
-            if pag.pixel(last_inventory_pos.x, last_inventory_pos.y) != last_inventory_rgb:
-                logs += 28
-                if idle == 'firemaking':
-                    j = 0
-                    while j < 4:
+                else:
+                    self.mouse.move_to(tree, .2, 2, .01, 'rand')
+                    self.mouse.click()
+                    time.sleep(3)
+                    while bcv.search_text_in_rect(self.rect_game_view, ["Woodcutting", 'woodcuttirg', 'woodcuttirig'],
+                                                  ["Not", 'No[', 'nol', 'n[']):
+                        time.sleep(2)
+                        continue
+                if pag.pixel(last_inventory_pos.x, last_inventory_pos.y) != last_inventory_rgb:
+                    logs += 28
+                    if idle == 'firemaking':
+                        j = 0
+                        while j < 4:
+                            self.mouse.move_to(self.inventory_slots[0][0], .2, 1, .01, 'rand')
+                            self.mouse.click()
+
+                            self.mouse.move_to(self.inventory_slots[6][3], .5, 1, .01, 'rand')
+                            self.mouse.click()
+                            exit = False
+                            s = time.time()
+                            while not exit:
+                                if pag.locateCenterOnScreen('src/images/bot/firemaking.png', confidence=.9) is not None:
+                                    exit = True
+                                elif time.time() - s > 10:
+                                    exit = True
+                                else:
+                                    continue
+                            time.sleep(2)
+                            j += 1
+                    if idle == 'fletching' or idle == 'bank_n_fletch':
                         self.mouse.move_to(self.inventory_slots[0][0], .2, 1, .01, 'rand')
                         self.mouse.click()
 
-                        self.mouse.move_to(self.inventory_slots[6][3], .5, 1, .01, 'rand')
+                        self.mouse.move_to(self.inventory_slots[0][2], .5, 1, .01, 'rand')
                         self.mouse.click()
-                        exit = False
-                        s = time.time()
-                        while not exit:
-                            if pag.locateCenterOnScreen('src/images/bot/firemaking.png', confidence=.9) is not None:
-                                exit = True
-                            elif time.time() - s > 10:
-                                exit = True
+                        time.sleep(1)
+                        pag.press('SPACE')
+                        time.sleep(50)
+                    if idle == 'bank' or idle == 'bank_n_fletch':
+                        try:
+                            loc = self.get_nearest_tag(self.TAG_PURPLE)
+                            if loc is None:
+                                raise Exception("Bank not found")
+                            self.mouse.move_to(loc, .2, 1, .01, 'rand')
+                            self.mouse.click()
+                            time.sleep(12)
+                            if idle == 'bank':
+                                deposit  = pag.locateCenterOnScreen('src/images/bot/bank_deposit_all.png', confidence=.9)
+                                if deposit is None:
+                                    time.sleep(3)
+                                    deposit = pag.locateCenterOnScreen('src/images/bot/bank_deposit_all.png', confidence=.9)
+                                self.mouse.move_to(deposit, .2, 1, .01, 'rand')
+                                self.mouse.click()
+                                self.mouse.move_to((489, 47), .2, 1, .01, 'rand')
+                                self.mouse.click()
+                                time.sleep(1)
                             else:
-                                continue
-                        time.sleep(2)
-                        j += 1
-                if idle == 'fletching' or idle == 'bank_n_fletch':
-                    self.mouse.move_to(self.inventory_slots[0][0], .2, 1, .01, 'rand')
-                    self.mouse.click()
-
-                    self.mouse.move_to(self.inventory_slots[0][2], .5, 1, .01, 'rand')
-                    self.mouse.click()
-                    time.sleep(1)
-                    pag.press('SPACE')
-                    time.sleep(50)
-                if idle == 'bank' or idle == 'bank_n_fletch':
-                    try:
-                        loc = self.get_nearest_tag(self.TAG_PURPLE)
-                        if loc is None:
-                            raise Exception("Bank not found")
-                        self.mouse.move_to(loc, .2, 1, .01, 'rand')
-                        self.mouse.click()
-                        time.sleep(12)
-                        if idle == 'bank':
-                            deposit  = pag.locateCenterOnScreen('src/images/bot/bank_deposit_all.png', confidence=.9)
-                            if deposit is None:
-                                time.sleep(3)
-                                deposit = pag.locateCenterOnScreen('src/images/bot/bank_deposit_all.png', confidence=.9)
-                            self.mouse.move_to(deposit, .2, 1, .01, 'rand')
-                            self.mouse.click()
-                            self.mouse.move_to((489, 47), .2, 1, .01, 'rand')
-                            self.mouse.click()
-                            time.sleep(1)
-                        else:
-                            pag.keyDown('SHIFT')
-                            self.mouse.move_to(self.inventory_slots[0][1], .2, 1, .01, 'rand')
-                            self.mouse.click()
-                            pag.keyUp('SHIFT')
-                        time.sleep(.1)
-                    except Exception as e:
-                        print(f'could not find bank: {e}')
-                        continue
-                    # self.mouse.move_to((646, 152), .2, 1, .01, 'rand')
-                    # self.mouse.click()
-                    # time.sleep(10)
+                                pag.keyDown('SHIFT')
+                                self.mouse.move_to(self.inventory_slots[0][1], .2, 1, .01, 'rand')
+                                self.mouse.click()
+                                pag.keyUp('SHIFT')
+                            time.sleep(.1)
+                        except Exception as e:
+                            print(f'could not find bank: {e}')
+                            continue
+                        # self.mouse.move_to((646, 152), .2, 1, .01, 'rand')
+                        # self.mouse.click()
+                        # time.sleep(10)
+                if new_action_available(self.username):
+                    new_action = get_action(self.username)
+                    if new_action == 'logout':
+                        update_status(self.username, 'agility', 'rek training', -1, None, False)
+                        # self.logout()
+                        wipe_new_action(self.username)
+                        return
+                    elif new_action == 'update':
+                        screen = pag.screenshot(self.username + '-temp.png',
+                                                region=(self.rect_inventory.start.x, self.rect_inventory.start.y,
+                                                        self.rect_inventory.end.x - self.rect_inventory.start.x,
+                                                        self.rect_inventory.end.y - self.rect_inventory.start.y))
+                        screen = cv2.cvtColor(np.array(screen), cv2.COLOR_RGB2BGR)
+                        upload_to_firebase(self.username + '-temp.png')
+                        wipe_new_action(self.username)
+                update_status(self.username,
+                              'woodcutting',
+                              f'cut {logs} in {datetime.timedelta(seconds=round(time.time() - s, 2))} seconds',
+                              '',
+                              None,
+                              logged_in=True)
+        except Exception as e:
+            update_status(self.username,
+                          'WOODCUT failed',
+                          f'error cost {e}\nafter {time.time() - s} seconds at: {datetime.datetime.now()}',
+                          -1,
+                          None,
+                          logged_in=False)
+            wipe_new_action(self.username)
+            return
+        print(f'logged {logs} logs')
+        update_status(self.username,
+                      'woodcut successful',
+                      f'complete after {time.time() - s:2f} seconds at {datetime.datetime.now().strftime("%H:%M:%S")}',
+                      -1,
+                      None,
+                      logged_in=False)
 
 
 if __name__ == '__main__':
-    ab = Woodcutting()
+    ab = Woodcutting('dumbartionbri')
     ab.test_loop('bank')
     # while True:
     #     tree = ab.get_nearest_tag(ab.TAG_PINK)
