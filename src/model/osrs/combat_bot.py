@@ -174,7 +174,10 @@ class OSRSCombat(RuneLiteBot):
                         # self.log_msg("Timed out looking for NPC.")
                         # self.set_status(BotStatus.STOPPED)
                         print('no NPC')
+                        update_status(self.username, 'combat training', 'resetting agro', self.killed,
+                                      None, True)
                         self.run_down()
+
                         timeout = 60
                     npc = self.get_nearest_tagged_NPC(self.rect_game_view)
                     if npc is not None:
@@ -182,7 +185,7 @@ class OSRSCombat(RuneLiteBot):
                         self.mouse.move_to(npc, duration=.2, destination_variance=2, time_variance=.001, tween='rand')
                         self.mouse.click()
                         time.sleep(3)
-                        timeout -= 3
+                        timeout -= 29
                     else:
                         # self.log_msg("No NPC found.")
                         time.sleep(2)
@@ -234,6 +237,7 @@ class OSRSCombat(RuneLiteBot):
                           None,
                           logged_in=False)
             wipe_new_action(self.username)
+            return
         print(f'killed {self.killed} NPCs')
         update_status(self.username,
                       'combat successful',
