@@ -155,7 +155,7 @@ class OSRSCombat(RuneLiteBot):
         else:
             print("Auto retaliate is already off.")
 
-    def test_loop(self, rounds=100):
+    def test_loop(self, rounds=100, battle_type='crabs', loot=False):
         s = time.time()
         self.killed = 0
         update_status(self.username, 'combat training', 'starting', self.killed, datetime.datetime.now(), True)
@@ -168,15 +168,22 @@ class OSRSCombat(RuneLiteBot):
                 # Attack NPC
                 timeout = 60  # check for up to 60 seconds
                 while not self.is_in_combat():
+                    if loot:
+                        loc = self.get_nearest_tag(self.TAG_PURPLE)
+                        if loc is not None:
+                            self.mouse.move_to(loc, time_variance=.001)
+                            self.mouse.click()
+                            time.sleep(1)
                     # if not self.status_check_passed():
                     #     return
                     if timeout <= 0:
                         # self.log_msg("Timed out looking for NPC.")
                         # self.set_status(BotStatus.STOPPED)
                         print('no NPC')
-                        update_status(self.username, 'combat training', 'resetting agro', self.killed,
+                        if battle_type == 'crabs':
+                            update_status(self.username, 'combat training', 'resetting agro', self.killed,
                                       None, True)
-                        self.run_down()
+                            self.run_down()
 
                         timeout = 60
                     npc = self.get_nearest_tagged_NPC(self.rect_game_view)
@@ -246,7 +253,6 @@ class OSRSCombat(RuneLiteBot):
                       None,
                       logged_in=False)
 
-
     def run_down(self):
         for i in range(3):
             self.mouse.move_to((650, 176), 0.2, destination_variance=3, time_variance=.001)
@@ -260,5 +266,5 @@ class OSRSCombat(RuneLiteBot):
 
 
 if __name__ == "__main__":
-    bot = OSRSCombat('travmanman')
-    bot.test_loop(260)
+    bot = OSRSCombat('dumbartionbri')
+    bot.test_loop(260, 'chickens', loot=True)

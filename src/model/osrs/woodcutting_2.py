@@ -170,7 +170,14 @@ class Woodcutting(RuneLiteBot):
             s = time.time()
             update_status(self.username, 'woodcutting', f'starting', logs, datetime.datetime.now(), True)
 
-            for l in range(1500):
+            for l in range(15000):
+                if not bcv.search_text_in_rect(self.rect_game_view, [''], ['you were disconnected from the server']):
+                    update_status(self.username,
+                                  'WOODCUT failed',
+                                  f'logged out at: {datetime.datetime.now()}',
+                                  -1,
+                                  None,
+                                  logged_in=False)
                 tree = self.get_nearest_tag(self.TAG_PINK)
                 if tree is None:
                     time.sleep(1)
@@ -180,7 +187,7 @@ class Woodcutting(RuneLiteBot):
                     self.mouse.click()
                     time.sleep(3)
                     while bcv.search_text_in_rect(self.rect_game_view, ["Woodcutting", 'woodcuttirg', 'woodcuttirig'],
-                                                  ["Not", 'No[', 'nol', 'n[']):
+                                                  ["Not", 'No[', 'nol', 'n[', 'nt', 'nl']):
                         time.sleep(2)
                         continue
                 if pag.pixel(last_inventory_pos.x, last_inventory_pos.y) != last_inventory_rgb:
