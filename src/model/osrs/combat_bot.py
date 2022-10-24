@@ -200,7 +200,7 @@ class OSRSCombat(RuneLiteBot):
                     if new_action_available(self.username):
                         new_action = get_action(self.username)
                         if new_action == 'logout':
-                            update_status(self.username, 'agility', 'rek training', -1, None)
+                            update_status(self.username, 'combat', 'loggout of combat', -1, None)
                             # self.logout()
                             wipe_new_action(self.username)
                             return
@@ -267,4 +267,5 @@ class OSRSCombat(RuneLiteBot):
 
 if __name__ == "__main__":
     bot = OSRSCombat('dumbartionbri')
-    bot.test_loop(260, 'chickens', loot=True)
+    bot.test_loop(495, 'cows', loot=False)
+
