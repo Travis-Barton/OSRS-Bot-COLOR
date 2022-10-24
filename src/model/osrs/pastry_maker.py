@@ -134,7 +134,7 @@ def main(loops, loop_type='pastry'):
             if not make_pastry():
                 print(f'pastry making issue')
                 return False
-            objects += 14
+            objects += 9
         if loop_type == 'pies':
             if not deposit_withdraw_pie():
                 print(f'issue with depositing')
@@ -147,15 +147,15 @@ def main(loops, loop_type='pastry'):
             if not make_pie_crust():
                 print(f'pie making issue')
                 return False
-            objects += 9
+            objects += 14
         speed = time.time() - s
         speed_num.append(speed)
         avg_runs = sum(speed_num)/len(speed_num)
         process_report = f'Run: {i}\n' \
                          f'{objects} {loop_type} made\n' \
-                         f'average time {avg_runs}\n' \
-                         f'objects/hr: {3600*objects/avg_runs}\n' \
-                         f'gp/hr profit: {pricing[loop_type]*3600*objects/avg_runs}'
+                         f'average time {avg_runs:,}\n' \
+                         f'objects/hr: {3600*objects/sum(speed_num):,.2f}\n' \
+                         f'gp/hr profit: {pricing[loop_type]*3600*objects/sum(speed_num):,.2f}'
         print(process_report)
         update_status('dumbartonbri',
                       status=f'processing {loop_type}',
