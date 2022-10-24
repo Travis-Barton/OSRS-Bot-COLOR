@@ -11,7 +11,6 @@ import utilities.bot_cv as bcv
 import os
 from firebase_tools.fb_logger import upload_to_firebase, get_action, wipe_new_action, update_status, new_action_available
 import datetime
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 class Woodcutting(RuneLiteBot):

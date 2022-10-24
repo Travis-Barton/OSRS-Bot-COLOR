@@ -158,7 +158,14 @@ class OSRSCombat(RuneLiteBot):
     def test_loop(self, rounds=100, battle_type='crabs', loot=False):
         s = time.time()
         self.killed = 0
-        update_status(self.username, 'combat training', 'starting', self.killed, datetime.datetime.now(), True)
+        if not bcv.search_text_in_rect(self.rect_game_view, [''], ['you were disconnected from the server']):
+            update_status(self.username,
+                          'combat failed',
+                          f'logged out at: {datetime.datetime.now()}',
+                          -1,
+                          None,
+                          logged_in=False)
+        update_status(self.username, f'combat training {battle_type}', 'starting', self.killed, datetime.datetime.now(), True)
         try:
 
             while self.killed < rounds:
@@ -189,7 +196,7 @@ class OSRSCombat(RuneLiteBot):
                     npc = self.get_nearest_tagged_NPC(self.rect_game_view)
                     if npc is not None:
                         # self.log_msg("Attempting to attack NPC...")
-                        self.mouse.move_to(npc, duration=.2, destination_variance=2, time_variance=.001, tween='rand')
+                        self.mouse.move_to(npc, duration=.12, destination_variance=2, time_variance=.0005, tween='rand')
                         self.mouse.click()
                         time.sleep(3)
                         timeout -= 29
@@ -200,7 +207,7 @@ class OSRSCombat(RuneLiteBot):
                     if new_action_available(self.username):
                         new_action = get_action(self.username)
                         if new_action == 'logout':
-                            update_status(self.username, 'agility', 'rek training', -1, None)
+                            update_status(self.username, 'combat', f'combat training {battle_type}', -1, None)
                             # self.logout()
                             wipe_new_action(self.username)
                             return
@@ -231,14 +238,14 @@ class OSRSCombat(RuneLiteBot):
                 self.killed += 1
                 update_status(self.username,
                               'combat',
-                              f'killed {self.killed} of {rounds} in {datetime.timedelta(seconds=round(time.time() - s, 2))} seconds',
+                              f'killed {self.killed} {battle_type} of {rounds} in {datetime.timedelta(seconds=round(time.time() - s, 2))}',
                               '',
                               None,
                               logged_in=True)
                 print(f"Enemy killed. {rounds - self.killed} to go!")
         except Exception as e:
             update_status(self.username,
-                          'combat failed',
+                          'combat failed: ' + battle_type,
                           f'error cost {e}\nafter {time.time()-s} seconds at: {datetime.datetime.now()}',
                           -1,
                           None,
@@ -266,5 +273,5 @@ class OSRSCombat(RuneLiteBot):
 
 
 if __name__ == "__main__":
-    bot = OSRSCombat('dumbartionbri')
-    bot.test_loop(260, 'chickens', loot=True)
+    bot = OSRSCombat('travmanman')
+    bot.test_loop(121, 'trolls', loot=False)
