@@ -12,9 +12,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 cred = credentials.Certificate("src/firebase_tools/runebot_key.json")
-fba.initialize_app(cred, {
+try:
+    fba.initialize_app(cred, {
     'storageBucket': 'gs://dene-2ac17.appspot.com'
-})
+    })
+except:
+    pass
 db = firestore.client()
 
 

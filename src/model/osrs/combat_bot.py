@@ -196,7 +196,7 @@ class OSRSCombat(RuneLiteBot):
                     npc = self.get_nearest_tagged_NPC(self.rect_game_view)
                     if npc is not None:
                         # self.log_msg("Attempting to attack NPC...")
-                        self.mouse.move_to(npc, duration=.12, destination_variance=2, time_variance=.0005, tween='rand')
+                        self.mouse.move_to(npc, duration=.2, destination_variance=2, time_variance=.001, tween='rand')
                         self.mouse.click()
                         time.sleep(3)
                         timeout -= 29
