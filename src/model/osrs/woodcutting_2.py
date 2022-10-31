@@ -14,7 +14,7 @@ import datetime
 
 
 class Woodcutting(RuneLiteBot):
-    def __init__(self, username):
+    def __init__(self):
         title = "wooductting bot"
         description = ("This bot will cut wood with the option of fletching, burning or banking the logs.")
         super().__init__(title=title, description=description)
@@ -24,7 +24,7 @@ class Woodcutting(RuneLiteBot):
         self.version = "1.0.0"
         self.author = "Travis Barton"
         self.author_email = "travisdatabarton@gmail.com"
-        self.username = username
+
 
     def create_options(self):
         '''
@@ -35,6 +35,7 @@ class Woodcutting(RuneLiteBot):
         '''
         self.options_builder.add_slider_option("logs_cut", "How many logs to cut", 1, 360)  # max 180 minutes
         self.options_builder.add_dropdown_option("action", "what to do with logs", ['bank', 'fletch', 'burn', 'drop'])  # max 180 minutes
+        self.options_builder.add_dropdown_option('account', "what account is this?", ['travmanman', 'dumbartonbri', 'humblejob', 'miner49erguy'])
 
         self.options_builder.add_dropdown_option("fletch_option", "what to do if fletch", ['1', '2', '3', '4', '5'])
 
@@ -49,6 +50,9 @@ class Woodcutting(RuneLiteBot):
             if option == "running_time":
                 self.running_time = options[option]
                 self.log_msg(f"Bot will run for {self.running_time} rounds.")
+            elif option == "account":
+                self.username = options[option]
+                self.log_msg(f"Bot will run with account: {self.username}.")
             else:
                 self.log_msg(f"Unknown option: {option}")
                 self.options_set = False

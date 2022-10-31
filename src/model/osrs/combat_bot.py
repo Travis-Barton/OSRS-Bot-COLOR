@@ -13,7 +13,7 @@ import datetime
 
 
 class OSRSCombat(RuneLiteBot):
-    def __init__(self, username):
+    def __init__(self):
         title = "Combat Bot"
         description = ("This bot attacks NPCs tagged using RuneLite. Position your character in the viscinity of the tagged NPCs. " +
                        "Ensure there are no RuneLite overlays currently visible in the top-left of the game-view, as this bot relies " +
@@ -23,13 +23,14 @@ class OSRSCombat(RuneLiteBot):
         self.should_loot = False
         self.should_bank = False
         self.special_cases = False
-        self.username = username
+        self.username = 'undefined'
 
 
     def create_options(self):
         self.options_builder.add_slider_option("kills", "How many kills?", 1, 500)
         self.options_builder.add_checkbox_option("prefs", "Additional options", ["Loot", "Bank"])
         self.options_builder.add_checkbox_option("special_cases", "Special Cases", ["Rock Crab Training"])
+        self.options_builder.add_dropdown_option("username", "Username", ["dumbartonbri", "dumbartonbri2", "dumbartonbri3"])
 
     def save_options(self, options: dict):
         for option in options:
@@ -49,6 +50,9 @@ class OSRSCombat(RuneLiteBot):
                 if 'Rock Crab Training' in options[option]:
                     self.special_cases = True
                     self.log_msg("Rock Crab Training enabled.")
+            elif option == "username":
+                self.username = options[option]
+                self.log_msg("RuneScape username: " + self.username)
             else:
                 self.log_msg(f"Unknown option: {option}")
         self.options_set = True

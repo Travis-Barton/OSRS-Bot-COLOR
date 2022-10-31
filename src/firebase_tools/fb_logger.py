@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 try:
-    cred = credentials.Certificate("src/firebase_tools/runebot_key.json")
+    cred = credentials.Certificate("firebase_tools/runebot_key.json")
 except:
     cred = credentials.Certificate("../firebase_tools/runebot_key.json")
 try:

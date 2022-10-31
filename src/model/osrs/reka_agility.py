@@ -13,7 +13,7 @@ import datetime
 
 
 class RekAgilityBot(RuneLiteBot):
-    def __init__(self, mouse_csv='src/files/agility/click_log.csv', username='test'):
+    def __init__(self, mouse_csv='files/agility/click_log.csv', username='test'):
         title = "Seers Agility Bot"
         description = ("This bot will complete the Seers' Village Agility Course. Put your character on the first"
                        " roof to begin. Marks will only be collected every 8 laps to save on time.")
