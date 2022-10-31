@@ -74,7 +74,7 @@ class BeerBot(RuneLiteBot):
         self.mouse.move_to((loc[0] + 3, loc[1]), .12, 0, 0, 'rand')
         self.mouse.click()
         time.sleep(2)
-        loc_money = pag.locateCenterOnScreen('images/bot/coins_stack.png', confidence=.9)
+        loc_money = pag.locateCenterOnScreen('src/images/bot/coins_stack.png', confidence=.9)
         self.mouse.move_to(loc_money, .12, 0, 0, 'rand')
         pag.keyDown('shift')
         self.mouse.click()
@@ -108,10 +108,10 @@ class BeerBot(RuneLiteBot):
         self.mouse.click()
         time.sleep(1.1)
         itt = 0
-        while pag.locateCenterOnScreen('images/dialog_screens/varrok_barman.png') is None:
+        while pag.locateCenterOnScreen('src/images/dialog_screens/varrok_barman.png') is None:
             if itt > 6:
                 return self.buy_beers()
-            if pag.locateCenterOnScreen('images/bot/logout_screen.png') is not None:
+            if pag.locateCenterOnScreen('src/images/bot/logout_screen.png') is not None:
                 return False
             itt += 1
             time.sleep(1)
@@ -146,10 +146,10 @@ class BeerBot(RuneLiteBot):
         self.mouse.move_to((loc[0] + 3, loc[1]), .12, 0, 0, 'rand')
         self.mouse.click()
         itt = 0
-        while pag.locateCenterOnScreen('images/bot/bank_deposit_all.png') is None:
+        while pag.locateCenterOnScreen('src/images/bot/bank_deposit_all.png') is None:
             if itt > 10:
                 return self.deposit_in_bank(walk)
-            if pag.locateCenterOnScreen('images/bot/logout_screen.png') is not None:
+            if pag.locateCenterOnScreen('src/images/bot/logout_screen.png') is not None:
                 return False
             itt += 1
             time.sleep(1)
@@ -169,7 +169,7 @@ class BeerBot(RuneLiteBot):
 
     def withdraw_energy_pot(self):
         # drink energy pot
-        loc_pot = pag.locateCenterOnScreen('images/bot/energy_pot.png')
+        loc_pot = pag.locateCenterOnScreen('src/images/bot/energy_pot.png')
         self.mouse.move_to(loc_pot, .12, 0, 0, 'rand')
         self.mouse.click()
 
