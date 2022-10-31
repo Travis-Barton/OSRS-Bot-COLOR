@@ -2,16 +2,11 @@ import firebase_admin as fba
 from firebase_admin import credentials, storage
 from firebase_admin import firestore
 import datetime
-
-import time
 import os
-import sys
-import json
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+dir_path = os.path.dirname(os.path.realpath(__file__))
+print(dir_path + "\\runebot_key.json")
 try:
-    cred = credentials.Certificate("src/firebase_tools/runebot_key.json")
+    cred = credentials.Certificate(dir_path + "\\runebot_key.json")
 except:
     cred = credentials.Certificate("../firebase_tools/runebot_key.json")
 try:

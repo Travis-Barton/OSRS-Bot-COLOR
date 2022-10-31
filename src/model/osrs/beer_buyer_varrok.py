@@ -1,12 +1,9 @@
 import pyautogui as pag
-from src.utilities.mouse_utils import MouseUtils
-from src.model.osrs.woodcutting_2 import Woodcutting
 import time
 import random as rd
-from src.firebase_tools.fb_logger import update_status, new_action_available, wipe_new_action, get_action
+from firebase_tools.fb_logger import update_status, new_action_available, wipe_new_action, get_action
 import datetime
 import numpy as np
-from model.bot import Bot, BotStatus
 from model.runelite_bot import RuneLiteBot
 import time
 
@@ -19,6 +16,10 @@ class BeerBot(RuneLiteBot):
         self.running_time = 0
         self.multi_select_example = None
         self.menu_example = None
+        self.options_set = True
+        self.setup = False
+        self.loops = 100
+        self.username = 'dumbartonbri'
 
     def create_options(self):
         """
@@ -46,17 +47,20 @@ class BeerBot(RuneLiteBot):
                 self.username = options[option]
                 self.log_msg(f"Bot will run with account: {self.username}.")
             elif option == "setup":
-                self.setup = options[option]
+                self.setup = options[option][0]
                 self.log_msg(f"Bot setup is set to: {self.setup}.")
             else:
                 self.log_msg(f"Unknown option: {option}")
-                self.options_set = False
 
         if self.options_set:
             self.log_msg("Options set successfully.")
         else:
-            self.log_msg("Failed to set options.")
+            self.log_msg("using defaults")
             print("Developer: ensure option keys are correct, and that the option values are being accessed correctly.")
+            self.setup = False
+            self.loops = 100
+            self.username = 'dumbartonbri'
+
 
     def setup_bot(self):
 
@@ -67,7 +71,7 @@ class BeerBot(RuneLiteBot):
         self.mouse.move_to((loc[0] + 3, loc[1]), .12, 0, 0, 'rand')
         self.mouse.click()
         time.sleep(2)
-        loc_money = pag.locateCenterOnScreen('src/images/bot/coins_stack.png', confidence=.9)
+        loc_money = pag.locateCenterOnScreen('images/bot/coins_stack.png', confidence=.9)
         self.mouse.move_to(loc_money, .12, 0, 0, 'rand')
         pag.keyDown('shift')
         self.mouse.click()
@@ -101,10 +105,10 @@ class BeerBot(RuneLiteBot):
         self.mouse.click()
         time.sleep(1.1)
         itt = 0
-        while pag.locateCenterOnScreen('src/images/dialog_screens/varrok_barman.png') is None:
+        while pag.locateCenterOnScreen('images/dialog_screens/varrok_barman.png') is None:
             if itt > 6:
                 return self.buy_beers()
-            if pag.locateCenterOnScreen('src/images/bot/logout_screen.png') is not None:
+            if pag.locateCenterOnScreen('images/bot/logout_screen.png') is not None:
                 return False
             itt += 1
             time.sleep(1)
@@ -139,10 +143,10 @@ class BeerBot(RuneLiteBot):
         self.mouse.move_to((loc[0] + 3, loc[1]), .12, 0, 0, 'rand')
         self.mouse.click()
         itt = 0
-        while pag.locateCenterOnScreen('src/images/bot/bank_deposit_all.png') is None:
+        while pag.locateCenterOnScreen('images/bot/bank_deposit_all.png') is None:
             if itt > 10:
                 return self.deposit_in_bank(walk)
-            if pag.locateCenterOnScreen('src/images/bot/logout_screen.png') is not None:
+            if pag.locateCenterOnScreen('images/bot/logout_screen.png') is not None:
                 return False
             itt += 1
             time.sleep(1)
@@ -162,7 +166,7 @@ class BeerBot(RuneLiteBot):
 
     def withdraw_energy_pot(self):
         # drink energy pot
-        loc_pot = pag.locateCenterOnScreen('src/images/bot/energy_pot.png')
+        loc_pot = pag.locateCenterOnScreen('images/bot/energy_pot.png')
         self.mouse.move_to(loc_pot, .12, 0, 0, 'rand')
         self.mouse.click()
 
@@ -348,4 +352,4 @@ class BeerBot(RuneLiteBot):
 if __name__ == '__main__':
     # main(132)
     bot = BeerBot()
-    bot.distributed_main(132, ['dumbartonbri', 'humblejob', 'miner49erguy'], setup=False)
+    bot.main_loop()
