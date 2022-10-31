@@ -1,12 +1,15 @@
 import pyautogui as pag
 import time
 import random as rd
-from firebase_tools.fb_logger import update_status, new_action_available, wipe_new_action, get_action
 import datetime
 import numpy as np
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + "\\..\\..\\")
+sys.path.append(dir_path + "\\..\\..\\..\\")
 from model.runelite_bot import RuneLiteBot
-import time
-
+from firebase_tools.fb_logger import update_status, new_action_available, wipe_new_action, get_action
 
 class BeerBot(RuneLiteBot):
     def __init__(self):
