@@ -29,7 +29,7 @@ class BeerBot(RuneLiteBot):
         """
         self.options_builder.add_slider_option("beer_laps", "How many laps to run?", 1, 180)  # max 180 minutes
         self.options_builder.add_dropdown_option('account', "what account is this?", ['dumbartonbri', 'humblejob', 'miner49erguy'])
-        self.options_builder.add_checkbox_option('setup', "run setup?", ['yes', 'no'])
+        self.options_builder.add_checkbox_option('setup', "run setup?", [True, False])
 
     def save_options(self, options: dict):
         """
@@ -122,7 +122,7 @@ class BeerBot(RuneLiteBot):
         if walk:
             self.mouse.move_to((567, 149), .15, 0, .001, 'rand')
             self.mouse.click()
-        self.mouse.move_to((681, 66), 1, time_variance=.001)
+        self.mouse.move_to((698, 69), 1, time_variance=.001)
         self.mouse.click()
         # drink_potion()
         time.sleep(22 if not dist else .1)  # alter for run
