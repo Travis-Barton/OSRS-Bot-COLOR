@@ -19,7 +19,7 @@ db = firestore.client()
 
 # make a new entry with the account name and required fields
 
-acc = 'humblejob'
+acc = 'math4you'
 db.collection(u'accounts').document(acc).create({
                                                             u'status': '',
                                                             u'last_updated': datetime.datetime.now(),

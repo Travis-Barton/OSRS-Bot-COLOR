@@ -129,7 +129,7 @@ class BeerBot(RuneLiteBot):
         if walk:
             self.mouse.move_to((567, 149), .15, 0, .001, 'rand')
             self.mouse.click()
-        self.mouse.move_to((698, 69), 1, time_variance=.001)
+        self.mouse.move_to((692, 72), 1, time_variance=.001)
         self.mouse.click()
         # drink_potion()
         time.sleep(22 if not dist else .1)  # alter for run
@@ -355,4 +355,6 @@ class BeerBot(RuneLiteBot):
 if __name__ == '__main__':
     # main(132)
     bot = BeerBot()
+    bot.username = 'math4you'
     bot.main_loop()
+    # bot.distributed_main(100, ['humblejob', 'miner49erguy'])
