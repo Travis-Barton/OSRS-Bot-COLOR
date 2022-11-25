@@ -155,7 +155,7 @@ class OSRSCombat(RuneLiteBot):
         else:
             print("Auto retaliate is already off.")
 
-    def test_loop(self, rounds=100, battle_type='crabs', loot=False):
+    def test_loop(self, rounds=100, battle_type='crabs', loot=False, safespot=False):
         s = time.time()
         self.killed = 0
         if not bcv.search_text_in_rect(self.rect_game_view, [''], ['you were disconnected from the server']):
@@ -176,9 +176,9 @@ class OSRSCombat(RuneLiteBot):
                 timeout = 60  # check for up to 60 seconds
                 while not self.is_in_combat():
                     if loot:
-                        loc = self.get_nearest_tag(self.TAG_PURPLE)
+                        loc = self.get_nearest_tag(self.TAG_BLUE)
                         if loc is not None:
-                            self.mouse.move_to(loc, time_variance=.001)
+                            self.mouse.move_to(loc, 3, time_variance=.001)
                             self.mouse.click()
                             time.sleep(1)
                     # if not self.status_check_passed():
@@ -196,9 +196,20 @@ class OSRSCombat(RuneLiteBot):
                     npc = self.get_nearest_tagged_NPC(self.rect_game_view)
                     if npc is not None:
                         # self.log_msg("Attempting to attack NPC...")
-                        self.mouse.move_to(npc, duration=.2, destination_variance=2, time_variance=.001, tween='rand')
-                        self.mouse.click()
-                        time.sleep(3)
+                        if safespot:
+                            self.mouse.move_to(npc, duration=.1, destination_variance=3, time_variance=.001, tween='rand')
+                            pag.rightClick()
+                            loc = pag.locateCenterOnScreen('src/images/bot/attack_sign.png', confidence=.9)
+                            if loc is not None:
+                                self.mouse.move_to(loc, 0.1, time_variance=.001)
+                                pag.click()
+                                time.sleep(1)
+                            # Check if the center has the yellow NPC square, if not, find it and click it!
+
+                        else:
+                            self.mouse.move_to(npc, duration=.1, destination_variance=3, time_variance=.001, tween='rand')
+                            self.mouse.click()
+                            time.sleep(3)
                         timeout -= 29
                     else:
                         # self.log_msg("No NPC found.")
@@ -274,4 +285,4 @@ class OSRSCombat(RuneLiteBot):
 
 if __name__ == "__main__":
     bot = OSRSCombat('travmanman')
-    bot.test_loop(121, 'trolls', loot=False)
+    bot.test_loop(62, 'demons', loot=False, safespot=True)

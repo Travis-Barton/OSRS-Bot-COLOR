@@ -185,7 +185,7 @@ class Woodcutting(RuneLiteBot):
                     self.mouse.move_to(tree, .2, 2, .01, 'rand')
                     self.mouse.click()
                     time.sleep(3)
-                    while bcv.search_text_in_rect(self.rect_game_view, ["Woodcutting", 'woodcuttirg', 'woodcuttirig'],
+                    while bcv.search_text_in_rect(self.rect_game_view, ["uoodcuttirig", "Woodcutting", 'woodcuttirg', 'woodcuttirig'],
                                                   ["Not", 'No[', 'nol', 'n[', 'nt', 'nl']):
                         time.sleep(2)
                         continue
@@ -289,7 +289,7 @@ class Woodcutting(RuneLiteBot):
 
 
 if __name__ == '__main__':
-    ab = Woodcutting('dumbartionbri')
+    ab = Woodcutting('travmanman')
     ab.test_loop('bank')
     # while True:
     #     tree = ab.get_nearest_tag(ab.TAG_PINK)
