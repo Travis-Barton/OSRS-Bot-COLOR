@@ -8,7 +8,8 @@ import datetime
 import numpy as np
 pricing = {'pies': 173, 'pastry': 72}
 mouse = MouseUtils()
-bot = Woodcutting('dumbartonbri')
+bot = Woodcutting()
+bot.username = 'dumbartonbri'
 
 
 def setup(food_type='pastry'):
