@@ -7,7 +7,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 try:
     cred = credentials.Certificate(dir_path + "\\runebot_key.json")
 except:
-    cred = credentials.Certificate("../firebase_tools/runebot_key.json")
+    cred = credentials.Certificate("src/firebase_tools/runebot_key.json")
 try:
     fba.initialize_app(cred, {
     'storageBucket': 'gs://dene-2ac17.appspot.com'
