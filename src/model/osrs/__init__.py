@@ -1,1 +1,2 @@
-from .example_bot import ExampleBot
+from .combat.combat import OSRSCombat
+from .woodcutter import OSRSWoodcutter
